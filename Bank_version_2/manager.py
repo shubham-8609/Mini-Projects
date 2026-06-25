@@ -444,6 +444,129 @@ class Manager:
         )
 
     # ---------------------------------------
+    # Admin Login
+    # ---------------------------------------
+
+    def login_admin(self, username, password):
+        hashed_password = self.hash_password(password)
+
+        query = """
+        SELECT admin_id, username
+        FROM admins
+        WHERE username = %s
+        AND password_hash = %s
+        """
+
+        return self.db.fetch_one(
+            query,
+            (
+                username,
+                hashed_password
+            )
+        )
+
+    # ---------------------------------------
+    # Admin - Users
+    # ---------------------------------------
+
+    def get_all_users(self):
+        query = """
+        SELECT
+            id,
+            username,
+            balance,
+            created_at
+        FROM users
+        ORDER BY id DESC
+        """
+
+        return self.db.fetch_all(query)
+
+    def search_users(self, keyword):
+        query = """
+        SELECT
+            id,
+            username,
+            balance,
+            created_at
+        FROM users
+        WHERE username LIKE %s
+        OR CAST(id AS CHAR) LIKE %s
+        ORDER BY id DESC
+        """
+
+        search_term = f"%{keyword}%"
+
+        return self.db.fetch_all(
+            query,
+            (
+                search_term,
+                search_term
+            )
+        )
+
+    def delete_user(self, user_id):
+        try:
+            self.db.begin_transaction()
+
+            query = """
+            DELETE FROM users
+            WHERE id = %s
+            """
+
+            self.db.cursor.execute(query, (user_id,))
+
+            if self.db.cursor.rowcount == 0:
+                self.db.rollback()
+                return False
+
+            self.db.commit()
+            return True
+
+        except Exception as e:
+            self.db.rollback()
+            print(e)
+            return False
+
+    # ---------------------------------------
+    # Admin - Transactions and Reports
+    # ---------------------------------------
+
+    def get_all_transactions(self):
+        query = """
+        SELECT
+            t.transaction_id,
+            t.sender_id,
+            sender.username AS sender_username,
+            t.receiver_id,
+            receiver.username AS receiver_username,
+            t.transaction_type,
+            t.amount,
+            t.transaction_time
+        FROM transactions t
+        LEFT JOIN users sender
+            ON t.sender_id = sender.id
+        LEFT JOIN users receiver
+            ON t.receiver_id = receiver.id
+        ORDER BY t.transaction_time DESC
+        """
+
+        return self.db.fetch_all(query)
+
+    def get_total_bank_balance(self):
+        query = """
+        SELECT COALESCE(SUM(balance), 0) AS total_balance
+        FROM users
+        """
+
+        result = self.db.fetch_one(query)
+
+        if result is None:
+            return 0
+
+        return result["total_balance"]
+
+    # ---------------------------------------
     # Close Database
     # ---------------------------------------
 

@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 from manager import Manager
+from windows.admin_login_window import AdminLoginWindow
 from windows.dashboard import DashboardWindow
 from windows.register_window import RegisterWindow
 
@@ -45,6 +46,13 @@ class LoginWindow:
             command=self.open_register
         ).pack()
 
+        tk.Button(
+            self.window,
+            text="Admin Login",
+            width=22,
+            command=self.open_admin_login
+        ).pack(pady=(10, 0))
+
         self.window.bind("<Return>", lambda event: self.login())
 
     def login(self):
@@ -70,6 +78,9 @@ class LoginWindow:
 
     def open_register(self):
         RegisterWindow(self.window, self.manager)
+
+    def open_admin_login(self):
+        AdminLoginWindow(self.window, self.manager)
 
     def show_login(self):
         self.username_entry.delete(0, tk.END)

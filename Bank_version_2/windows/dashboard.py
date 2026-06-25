@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox, simpledialog
+from tkinter import messagebox
 
 from windows.deposit_window import DepositWindow
 from windows.history_window import HistoryWindow
@@ -89,46 +89,73 @@ class DashboardWindow:
         HistoryWindow(self.window, self.manager, self.user["id"])
 
     def change_password(self):
-        current_password = simpledialog.askstring(
-            "Change Password",
-            "Current password:",
-            show="*",
-            parent=self.window
-        )
+        change_window = tk.Toplevel(self.window)
+        change_window.title("Change Password")
+        change_window.geometry("420x320")
+        change_window.resizable(False, False)
+        change_window.grab_set()
 
-        if current_password is None:
-            return
+        tk.Label(
+            change_window,
+            text="Change Password",
+            font=("Arial", 16, "bold")
+        ).pack(pady=(24, 18))
 
-        new_password = simpledialog.askstring(
-            "Change Password",
-            "New password:",
-            show="*",
-            parent=self.window
-        )
+        tk.Label(change_window, text="Current Password").pack()
+        current_password_entry = tk.Entry(change_window, show="*", width=30)
+        current_password_entry.pack(pady=(4, 12))
+        current_password_entry.focus()
 
-        if not new_password:
-            messagebox.showerror("Error", "New password is required.")
-            return
+        tk.Label(change_window, text="New Password").pack()
+        new_password_entry = tk.Entry(change_window, show="*", width=30)
+        new_password_entry.pack(pady=(4, 12))
 
-        confirm_password = simpledialog.askstring(
-            "Change Password",
-            "Confirm new password:",
-            show="*",
-            parent=self.window
-        )
+        tk.Label(change_window, text="Confirm New Password").pack()
+        confirm_password_entry = tk.Entry(change_window, show="*", width=30)
+        confirm_password_entry.pack(pady=(4, 18))
 
-        if new_password != confirm_password:
-            messagebox.showerror("Error", "Passwords do not match.")
-            return
+        def submit_change_password():
+            current_password = current_password_entry.get()
+            new_password = new_password_entry.get()
+            confirm_password = confirm_password_entry.get()
 
-        if self.manager.change_password(
-            self.user["id"],
-            current_password,
-            new_password
-        ):
-            messagebox.showinfo("Success", "Password changed successfully.")
-        else:
-            messagebox.showerror("Error", "Password could not be changed.")
+            if not current_password or not new_password or not confirm_password:
+                messagebox.showerror("Error", "All password fields are required.")
+                return
+
+            stored_user = self.manager.get_user(self.user["id"])
+
+            if stored_user is None:
+                messagebox.showerror("Error", "Account could not be loaded.")
+                change_window.destroy()
+                return
+
+            if stored_user["password_hash"] != self.manager.hash_password(current_password):
+                messagebox.showerror("Error", "The current password entered is incorrect.")
+                return
+
+            if new_password != confirm_password:
+                messagebox.showerror("Error", "Passwords do not match.")
+                return
+
+            if self.manager.change_password(
+                self.user["id"],
+                current_password,
+                new_password
+            ):
+                messagebox.showinfo("Success", "Password changed successfully.")
+                change_window.destroy()
+            else:
+                messagebox.showerror("Error", "Password could not be changed.")
+
+        tk.Button(
+            change_window,
+            text="Change Password",
+            width=20,
+            command=submit_change_password
+        ).pack()
+
+        change_window.bind("<Return>", lambda event: submit_change_password())
 
     def logout(self):
         self.window.destroy()

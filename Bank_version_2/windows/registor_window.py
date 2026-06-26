@@ -1,1 +1,0 @@
-from windows.register_window import RegisterWindow

@@ -25,7 +25,6 @@ class Manager:
         if initial_balance < 0:
             return False
 
-        # Check if username already exists
         query = """
         SELECT id
         FROM users
@@ -164,7 +163,6 @@ class Manager:
 
             self.db.begin_transaction()
 
-            # Update balance
             query = """
             UPDATE users
             SET balance = balance - %s
@@ -179,7 +177,6 @@ class Manager:
                 )
             )
 
-            # Insert transaction
             query = """
             INSERT INTO transactions
             (
@@ -251,8 +248,6 @@ class Manager:
             )
         ) is not None
 
-    
-
     # ---------------------------------------
     # Transaction History
     # ---------------------------------------
@@ -262,7 +257,7 @@ class Manager:
         SELECT
             t.transaction_id,
             t.sender_id,
-            sender.username AS sender_username,
+            sender.username  AS sender_username,
             t.receiver_id,
             receiver.username AS receiver_username,
             t.transaction_type,
@@ -274,7 +269,7 @@ class Manager:
         LEFT JOIN users receiver
             ON t.receiver_id = receiver.id
         WHERE t.sender_id = %s
-        OR t.receiver_id = %s
+        OR  t.receiver_id = %s
         ORDER BY t.transaction_time DESC
         """
 
@@ -292,12 +287,8 @@ class Manager:
 
     def transfer(self, sender_id, receiver_id, amount):
         try:
-            sender = self.get_user(sender_id)
+            sender   = self.get_user(sender_id)
             receiver = self.get_user(receiver_id)
-
-            # -------------------------
-            # Validation
-            # -------------------------
 
             if sender is None:
                 return False
@@ -314,53 +305,25 @@ class Manager:
             if sender["balance"] < amount:
                 return False
 
-            # -------------------------
-            # Start Transaction
-            # -------------------------
-
             self.db.begin_transaction()
 
-            # -------------------------
-            # Withdraw from sender
-            # -------------------------
-
+            # Deduct from sender
             query = """
             UPDATE users
             SET balance = balance - %s
             WHERE id = %s
             """
+            self.db.cursor.execute(query, (amount, sender_id))
 
-            self.db.cursor.execute(
-                query,
-                (
-                    amount,
-                    sender_id
-                )
-            )
-
-            # -------------------------
-            # Deposit to receiver
-            # -------------------------
-
+            # Credit to receiver
             query = """
             UPDATE users
             SET balance = balance + %s
             WHERE id = %s
             """
+            self.db.cursor.execute(query, (amount, receiver_id))
 
-            self.db.cursor.execute(
-                query,
-                (
-                    amount,
-                    receiver_id
-                )
-            )
-
-            # -------------------------
-            # Sender Transaction
-            # -------------------------
-
-            query = """
+            insert_query = """
             INSERT INTO transactions
             (
                 sender_id,
@@ -377,8 +340,10 @@ class Manager:
             )
             """
 
+            # TRANSFER_OUT record  — sender's perspective
+            # sender_id = who sent,  receiver_id = who received  ✓
             self.db.cursor.execute(
-                query,
+                insert_query,
                 (
                     sender_id,
                     receiver_id,
@@ -387,23 +352,18 @@ class Manager:
                 )
             )
 
-            # -------------------------
-            # Receiver Transaction
-            # -------------------------
-
+            # TRANSFER_IN record  — receiver's perspective
+            # FIX: sender_id = original sender,  receiver_id = original receiver
+            # (was incorrectly swapped: receiver_id came first before this fix)
             self.db.cursor.execute(
-                query,
+                insert_query,
                 (
-                    receiver_id,
-                    sender_id,
+                    sender_id,      # ← who originally sent the money
+                    receiver_id,    # ← who received it  (was swapped before)
                     "TRANSFER_IN",
                     amount
                 )
             )
-
-            # -------------------------
-            # Commit
-            # -------------------------
 
             self.db.commit()
             return True
@@ -537,7 +497,7 @@ class Manager:
         SELECT
             t.transaction_id,
             t.sender_id,
-            sender.username AS sender_username,
+            sender.username  AS sender_username,
             t.receiver_id,
             receiver.username AS receiver_username,
             t.transaction_type,

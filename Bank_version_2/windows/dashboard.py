@@ -279,90 +279,92 @@ class DashboardWindow:
     def change_password(self):
 
         change_window = tk.Toplevel(self.window)
-
         change_window.title("Change Password")
-
-        change_window.geometry("430x340")
-
+        change_window.geometry("480x500")
         change_window.resizable(False, False)
-
-        change_window.configure(bg=self.BACKGROUND)
-
+        change_window.configure(bg="#EEF2F7")
         change_window.grab_set()
 
-        tk.Label(
-            change_window,
-            text="🔒 Change Password",
-            bg=self.BACKGROUND,
-            font=("Segoe UI", 18, "bold")
-        ).pack(pady=20)
+        # ── Center everything ────────────────────────────
+        page = tk.Frame(change_window, bg="#EEF2F7")
+        page.place(relx=0.5, rely=0.5, anchor="center")
 
-        tk.Label(
-            change_window,
-            text="Current Password",
-            bg=self.BACKGROUND
-        ).pack()
+        # ── Icon + heading ───────────────────────────────
+        tk.Label(page, text="🔒",
+                 font=("Segoe UI Emoji", 30),
+                 bg="#EEF2F7").pack()
 
-        current_password_entry = tk.Entry(
-            change_window,
-            show="*",
-            width=32
-        )
+        tk.Label(page,
+                 text="Change Password",
+                 font=("Segoe UI", 15, "bold"),
+                 fg="#111827", bg="#EEF2F7").pack(pady=(6, 2))
 
-        current_password_entry.pack(pady=6)
+        tk.Label(page,
+                 text="Keep your account safe with a strong password.",
+                 font=("Segoe UI", 9),
+                 fg="#9CA3AF", bg="#EEF2F7").pack(pady=(0, 18))
 
-        tk.Label(
-            change_window,
-            text="New Password",
-            bg=self.BACKGROUND
-        ).pack()
+        # ── White card ───────────────────────────────────
+        card = tk.Frame(page, bg="#FFFFFF",
+                        highlightthickness=1,
+                        highlightbackground="#E5E7EB",
+                        padx=40, pady=32)
+        card.pack()
 
-        new_password_entry = tk.Entry(
-            change_window,
-            show="*",
-            width=32
-        )
+        # Current Password
+        tk.Label(card, text="Current Password",
+                 font=("Segoe UI", 9), fg="#374151",
+                 bg="#FFFFFF", anchor="w").pack(fill="x")
+        current_password_entry = tk.Entry(card, show="*",
+                                          font=("Segoe UI", 11),
+                                          fg="#111827", bg="#F9FAFB",
+                                          relief="flat", bd=0,
+                                          highlightthickness=1,
+                                          highlightbackground="#D1D5DB",
+                                          highlightcolor="#1A56A4",
+                                          width=30)
+        current_password_entry.pack(fill="x", ipady=7, pady=(3, 14))
 
-        new_password_entry.pack(pady=6)
+        # New Password
+        tk.Label(card, text="New Password",
+                 font=("Segoe UI", 9), fg="#374151",
+                 bg="#FFFFFF", anchor="w").pack(fill="x")
+        new_password_entry = tk.Entry(card, show="*",
+                                      font=("Segoe UI", 11),
+                                      fg="#111827", bg="#F9FAFB",
+                                      relief="flat", bd=0,
+                                      highlightthickness=1,
+                                      highlightbackground="#D1D5DB",
+                                      highlightcolor="#1A56A4",
+                                      width=30)
+        new_password_entry.pack(fill="x", ipady=7, pady=(3, 14))
 
-        tk.Label(
-            change_window,
-            text="Confirm Password",
-            bg=self.BACKGROUND
-        ).pack()
-
-        confirm_password_entry = tk.Entry(
-            change_window,
-            show="*",
-            width=32
-        )
-
-        confirm_password_entry.pack(pady=6)
+        # Confirm Password
+        tk.Label(card, text="Confirm Password",
+                 font=("Segoe UI", 9), fg="#374151",
+                 bg="#FFFFFF", anchor="w").pack(fill="x")
+        confirm_password_entry = tk.Entry(card, show="*",
+                                          font=("Segoe UI", 11),
+                                          fg="#111827", bg="#F9FAFB",
+                                          relief="flat", bd=0,
+                                          highlightthickness=1,
+                                          highlightbackground="#D1D5DB",
+                                          highlightcolor="#1A56A4",
+                                          width=30)
+        confirm_password_entry.pack(fill="x", ipady=7, pady=(3, 28))
 
         def submit_change_password():
 
             current_password = current_password_entry.get()
-
             new_password = new_password_entry.get()
-
             confirm_password = confirm_password_entry.get()
 
             if not current_password or not new_password or not confirm_password:
-
-                messagebox.showerror(
-                    "Error",
-                    "Please fill all fields."
-                )
-
+                messagebox.showerror("Error", "Please fill all fields.")
                 return
 
             if new_password != confirm_password:
-
-                messagebox.showerror(
-                    "Error",
-                    "Passwords do not match."
-                )
-
+                messagebox.showerror("Error", "Passwords do not match.")
                 return
 
             success = self.manager.change_password(
@@ -372,37 +374,30 @@ class DashboardWindow:
             )
 
             if success:
-
-                messagebox.showinfo(
-                    "Success",
-                    "Password changed successfully."
-                )
-
+                messagebox.showinfo("Success", "Password changed successfully.")
                 change_window.destroy()
-
             else:
+                messagebox.showerror("Error", "Current password is incorrect.")
 
-                messagebox.showerror(
-                    "Error",
-                    "Current password is incorrect."
-                )
+        # ── Change Password button (full width) ───────────
+        tk.Button(card,
+                  text="Change Password",
+                  command=submit_change_password,
+                  font=("Segoe UI", 10, "bold"),
+                  fg="#FFFFFF", bg="#1A56A4",
+                  activebackground="#154291",
+                  activeforeground="#FFFFFF",
+                  relief="flat", bd=0,
+                  cursor="hand2",
+                  height=2).pack(fill="x")
 
-        tk.Button(
-            change_window,
-            text="Change Password",
-            command=submit_change_password,
-            bg=self.PRIMARY_COLOR,
-            fg="white",
-            width=20,
-            font=("Segoe UI", 10, "bold"),
-            cursor="hand2"
-        ).pack(pady=20)
+        # ── Footer ───────────────────────────────────────
+        tk.Label(page,
+                 text="© 2026 Shubham Bank  •  All rights reserved",
+                 font=("Segoe UI", 8),
+                 fg="#9CA3AF", bg="#EEF2F7").pack(pady=(16, 0))
 
-        change_window.bind(
-            "<Return>",
-            lambda event: submit_change_password()
-        )
-
+        change_window.bind("<Return>", lambda event: submit_change_password())
     # ====================================================
 
     def logout(self):

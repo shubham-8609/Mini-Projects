@@ -21,7 +21,7 @@ class Database:
                 user=config.USER,
                 password=config.PASSWORD,
                 database=config.DATABASE,
-                autocommit=True
+                autocommit=False          # ← FIX: was True, conflicted with begin_transaction()
             )
             self.cursor = self.connection.cursor(dictionary=True)
             print("Connected to MySQL successfully.")
@@ -36,7 +36,7 @@ class Database:
     def execute(self, query, values=None):
         try:
             self.cursor.execute(query, values)
-            self.connection.commit()
+            self.connection.commit()      # explicit commit since autocommit=False
             return True
         except Error as e:
             print(e)

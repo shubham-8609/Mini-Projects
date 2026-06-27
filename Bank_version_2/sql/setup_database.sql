@@ -82,9 +82,4 @@ CREATE TABLE admins (
 
 INSERT INTO admins(username,password_hash)
 
-VALUES
-
-(
-'admin',
-'240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9'
-);
+insert into admins values(1 , "shubham" , "10f6d3ce9d854d1ebfc1ca7d1981fafc122a9970093382f2c5c72cfa6ab47572");

@@ -21,7 +21,7 @@ class Database:
                 user=config.USER,
                 password=config.PASSWORD,
                 database=config.DATABASE,
-                autocommit=False          # ← FIX: was True, conflicted with begin_transaction()
+                autocommit=False   # implicit transaction on every execute()
             )
             self.cursor = self.connection.cursor(dictionary=True)
             print("Connected to MySQL successfully.")
@@ -36,9 +36,10 @@ class Database:
     def execute(self, query, values=None):
         try:
             self.cursor.execute(query, values)
-            self.connection.commit()      # explicit commit since autocommit=False
+            self.connection.commit()
             return True
         except Error as e:
+            self.connection.rollback()
             print(e)
             return False
 
@@ -72,7 +73,9 @@ class Database:
     # -----------------------------------
 
     def begin_transaction(self):
-        self.connection.start_transaction()
+        # With autocommit=False the connection is already in a transaction.
+        # start_transaction() would raise an error here, so we do nothing.
+        pass
 
     # -----------------------------------
     # Commit

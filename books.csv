@@ -1,0 +1,2 @@
+book_id,title,author,genre,is_available,borrowed_by,borrow_date,next_id
+1,Learn Java Development,shubham,Coding,False,shubham,2026-06-28 11:08:29,2

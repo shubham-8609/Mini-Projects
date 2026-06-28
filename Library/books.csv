@@ -1,0 +1,4 @@
+book_id,title,author,genre,is_available,borrowed_by,borrow_date,next_id
+1,The Alchemist,Paulo Coelho,Fiction,True,,,4
+2,Python Crash Course,Eric Matthes,Education,True,,,4
+3,Atomic Habits,James Clear,Self-Help,True,,,4
